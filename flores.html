@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Carta con Flores Realistas</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #fde2e4, #fad2e1, #f8d7da);
+    overflow: hidden;
+    font-family: 'Segoe UI', cursive;
+  }
+
+  .carta {
+    position: relative;
+    width: 650px;
+    height: 450px;
+    perspective: 1500px;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  .sobre {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #fff0f5;
+    border: 3px solid #c97ca8;
+    transform-style: preserve-3d;
+    transition: transform 1.2s ease-in-out;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .solapa {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 325px solid transparent;
+    border-right: 325px solid transparent;
+    border-bottom: 225px solid #ffe6f0;
+    transform-origin: top;
+    transition: transform 1.2s ease-in-out;
+  }
+
+  .sobre.abierto .solapa {
+    transform: rotateX(-160deg);
+  }
+
+  .iniciales {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 40px;
+    font-weight: bold;
+    color: #b23a48;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    font-family: "Georgia", serif;
+  }
+
+  .contenido {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 15px;
+    background: #fffdfd;
+    border-radius: 10px;
+    border: 3px solid #c97ca8;
+    box-shadow: inset 0 0 15px rgba(210,145,188,0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease, transform 1s ease;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .contenido.visible {
+    opacity: 1;
+    transform: translateY(0);
+    z-index: 1;
+  }
+
+  h3 {
+    text-align: center;
+    color: #c9184a;
+    margin-top: 0;
+    font-size: 28px;
+  }
+
+  iframe {
+    width: 100%;
+    height: calc(100% - 40px);
+    border: none;
+    border-radius: 8px;
+    background: #fafafa;
+  }
+
+  .flor {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    transform: scale(0);
+    animation: crecer 2.5s forwards;
+    opacity: 0;
+    z-index: 1;
+  }
+
+  @keyframes crecer {
+    0% { transform: scale(0.1) translateY(100px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="carta" onclick="abrirCarta()">
+  <div class="sobre">
+    <div class="solapa"></div>
+    <div class="iniciales">J ♥ A</div>
+  </div>
+  <div class="contenido" id="contenido">
+    <h3>💌 Nuestra Carta 💌</h3>
+    <iframe id="archivo"></iframe>
+  </div>
+</div>
+
+<input type="file" accept=".pdf,.doc,.docx" onchange="cargarArchivo(this.files[0])" style="position: fixed; top: 10px; left: 10px; z-index:10;">
+
+<script>
+function abrirCarta() {
+  document.querySelector('.sobre').classList.toggle('abierto');
+  document.getElementById('contenido').classList.toggle('visible');
+
+  for (let i = 0; i < 6; i++) {
+    let flor = document.createElement("div");
+    flor.className = "flor";
+    flor.style.left = Math.random() * (window.innerWidth - 160) + "px";
+    flor.style.top = Math.random() * (window.innerHeight - 160) + "px";
+    flor.style.animationDelay = (Math.random() * 1.5) + "s";
+
+    if (Math.random() > 0.5) {
+      // Gerbera más natural
+      flor.innerHTML = `
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="gGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f9c7c9"/>
+            <stop offset="100%" stop-color="#e8506a"/>
+          </radialGradient>
+        </defs>
+        ${[...Array(24)].map((_,j)=>
+          `<ellipse cx="100" cy="50" rx="10" ry="50" fill="url(#gGrad)" transform="rotate(${j*15},100,100)" opacity="0.9"/>`
+        ).join("")}
+        <circle cx="100" cy="100" r="25" fill="#b34d3d"/>
+      </svg>`;
+    } else {
+      // Hortensia más natural
+      flor.innerHTML = `
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="hGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#d0e4f7"/>
+            <stop offset="100%" stop-color="#5f86c0"/>
+          </radialGradient>
+        </defs>
+        ${[...Array(15)].map((_,j)=>
+          `<circle cx="${100+Math.cos(j*24*Math.PI/180)*35}" cy="${100+Math.sin(j*24*Math.PI/180)*35}" r="20" fill="url(#hGrad)" opacity="0.8"/>`
+        ).join("")}
+        <circle cx="100" cy="100" r="15" fill="#3c5688"/>
+      </svg>`;
+    }
+
+    document.body.appendChild(flor);
+  }
+}
+
+function cargarArchivo(file) {
+  let url = URL.createObjectURL(file);
+  document.getElementById("archivo").src = url;
+}
+</script>
+</body>
+</html>
